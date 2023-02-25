@@ -1,5 +1,8 @@
 #include <inttypes.h>
+#include <stdbool.h>
 #include <stdio.h>
+
+#include <SDL2/SDL.h>
 
 #define ENTITIES_LIMIT 64
 
@@ -98,6 +101,48 @@ void remove_position(uint64_t entityId)
     positions[entityId] = (Position){0};
 }
 
+struct WindowSystem
+{
+    int (*start)(void);
+    int (*stop)(void);
+};
+typedef struct WindowSystem WindowSystem;
+
+const uint64_t SCREEN_WIDTH = 1280;
+const uint64_t SCREEN_HEIGHT = 720;
+SDL_Window* window = NULL;
+
+int start()
+{
+    if(SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
+    {
+        printf("Failed to initialize SDL Video subsystem. SDL_Error: %s\n", SDL_GetError());
+        return -2;
+    }
+    else
+    {
+        printf("Initialized SDL Video subsystem.\n");
+        if(!(window = SDL_CreateWindow("WH40KS", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN)))
+        {
+            printf("Failed to create SDL Window. SDL_Error: %s\n", SDL_GetError());
+            return -1;
+        }
+        else
+        {
+            printf("Created SDL Window.\n");
+            return 0;
+        }
+    }
+}
+
+int stop()
+{
+
+    SDL_DestroyWindow(window);
+    window = NULL;
+    SDL_Quit();
+}
+
 int main(int argc, char const *argv[])
 {
     printf("entities: %lu\n", entities);
@@ -126,5 +171,11 @@ int main(int argc, char const *argv[])
     remove_position(id);
     print_position(get_position(id));
 
+    WindowSystem windowSystem;
+    windowSystem.start = start;
+    windowSystem.stop = stop;
+
+    windowSystem.start();
+    windowSystem.stop();
     return 0;
 }
