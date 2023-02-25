@@ -38,6 +38,36 @@ void remove_army(uint64_t entityId)
     armies[entityId] = (Army){0};
 }
 
+struct Unit
+{
+    uint64_t value;
+};
+typedef struct Unit Unit;
+
+Unit units[ENTITIES_LIMIT];
+
+void print_unit(Unit *u)
+{
+    printf("Unit: %lu\n", u->value);
+}
+
+Unit *add_unit(uint64_t entityId)
+{
+    units[entityId] = (Unit){0};
+    return &units[entityId];
+}
+
+Unit *get_unit(uint64_t entityId)
+{
+    return &units[entityId];
+}
+
+void remove_unit(uint64_t entityId)
+{
+    units[entityId] = (Unit){0};
+}
+
+
 int main(int argc, char const *argv[])
 {
     printf("entities: %lu\n", entities);
@@ -51,6 +81,13 @@ int main(int argc, char const *argv[])
     print_army(get_army(id));
     remove_army(id);
     print_army(get_army(id));
+
+    Unit *u = add_unit(id);
+    print_unit(u);
+    u->value = 8;
+    print_unit(get_unit(id));
+    remove_unit(id);
+    print_unit(get_unit(id));
 
     return 0;
 }
