@@ -67,6 +67,36 @@ void remove_unit(uint64_t entityId)
     units[entityId] = (Unit){0};
 }
 
+struct Position
+{
+    double x;
+    double y;
+    double z;
+};
+typedef struct Position Position;
+
+Position positions[ENTITIES_LIMIT];
+
+void print_position(Position *p)
+{
+    printf("Position: (%f, %f, %f)\n", p->x, p->y, p->z);
+}
+
+Position *add_position(uint64_t entityId)
+{
+    positions[entityId] = (Position){0};
+    return &positions[entityId];
+}
+
+Position *get_position(uint64_t entityId)
+{
+    return &positions[entityId];
+}
+
+void remove_position(uint64_t entityId)
+{
+    positions[entityId] = (Position){0};
+}
 
 int main(int argc, char const *argv[])
 {
@@ -88,6 +118,13 @@ int main(int argc, char const *argv[])
     print_unit(get_unit(id));
     remove_unit(id);
     print_unit(get_unit(id));
+
+    Position *p = add_position(id);
+    print_position(p);
+    *p = (Position){ .z = 3.0, .y = 2.0, .x = 1.0};
+    print_position(get_position(id));
+    remove_position(id);
+    print_position(get_position(id));
 
     return 0;
 }
