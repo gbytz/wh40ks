@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include <SDL2/SDL.h>
+#include <SDL2/SDL2_gfxPrimitives.h>
 
 #define ENTITIES_LIMIT 64
 
@@ -245,10 +246,53 @@ void render_positions(SDL_Renderer *renderer, Position *positions)
     }
 }
 
+void render_base_circular(SDL_Renderer *renderer, Position *position, Base *base)
+{
+    aacircleRGBA(renderer, position->x, position->y, base->r0, 0xFF, 0x00, 0x00, 0xFF);
+}
+
+void render_base_elliptical(SDL_Renderer *renderer, Position *position, Base *base)
+{
+    aaellipseRGBA(renderer, position->x, position->y, base->r0, base->r1, 0xFF, 0x00, 0x00, 0xFF);
+}
+
+void render_base_rectangular(SDL_Renderer *renderer, Position *position, Base *base)
+{
+    rectangleRGBA(renderer,
+        position->x + base->r0,
+        position->y + base->r1,
+        position->x - base->r0,
+        position->y - base->r1,
+        0xFF, 0x00, 0x00, 0xFF
+        );
+}
+
+void render_bases(SDL_Renderer *renderer, Position *positions, Base *bases)
+{
+    for (int i = 1; i <= entities; ++i)
+    {
+        switch(bases[i].shape)
+        {
+            case Circular:
+                render_base_circular(renderer, &positions[i], &bases[i]);
+                break;
+            case Elliptical:
+                render_base_elliptical(renderer, &positions[i], &bases[i]);
+                break;
+            case Rectangular:
+                render_base_rectangular(renderer, &positions[i], &bases[i]);
+                break;
+            default:
+                printf("Unknown BaseShape at index: %d\n", i);
+        }
+    }
+}
+
 int update_render_system()
 {
     clear_renderer(renderer);
     render_positions(renderer, positions);
+    render_bases(renderer, positions, bases);
     present_renderer(renderer);
 }
 
@@ -308,6 +352,31 @@ int main(int argc, char const *argv[])
 
     remove_base(id);
     print_base(get_base(id));
+
+    a->value = 1;
+    u->value = 1;
+    *p = (Position){.x = 100.0, .y = 100.0, .z = 0.0};
+    *b = (Base){.shape = Circular, .r0 = 25.0};
+
+    uint64_t id1 = create_entity();
+    Army *a1 = add_army(id1);
+    Unit *u1 = add_unit(id1);
+    Position *p1 = add_position(id1);
+    Base *b1 = add_base(id1);
+    a1->value = 2;
+    u1->value = 1;
+    *p1 = (Position){.x = 200.0, .y = 200.0, .z = 0.0};
+    *b1 = (Base){.shape = Elliptical, .r0 = 25.0, .r1 = 70.0};
+
+    uint64_t id2 = create_entity();
+    Army *a2 = add_army(id2);
+    Unit *u2 = add_unit(id2);
+    Position *p2 = add_position(id2);
+    Base *b2 = add_base(id2);
+    a2->value = 2;
+    u2->value = 1;
+    *p2 = (Position){.x = 400.0, .y = 400.0, .z = 0.0};
+    *b2 = (Base){.shape = Rectangular, .r0 = 25.0, .r1 = 70.0};
 
     WindowSystem windowSystem;
     windowSystem.start = start_window_system;
