@@ -390,7 +390,21 @@ int main(int argc, char const *argv[])
     windowSystem.start();
     renderSystem.start();
 
-    renderSystem.update();
+    bool quit = false;
+    SDL_Event e;
+    while(!quit)
+    {
+        //Handle events on queue
+        while( SDL_PollEvent( &e ) != 0 )
+        {
+            //User requests quit
+            if( e.type == SDL_QUIT )
+            {
+                quit = true;
+            }
+        }
+        renderSystem.update();
+    }
 
     renderSystem.stop();
     windowSystem.stop();
