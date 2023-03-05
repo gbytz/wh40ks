@@ -236,10 +236,10 @@ void present_renderer(SDL_Renderer* renderer)
     SDL_RenderPresent(renderer);
 }
 
-void render_positions(Position *positions)
+void render_positions(SDL_Renderer *renderer, Position *positions)
 {
     SDL_SetRenderDrawColor(renderer, 0x00, 0xFF, 0x00, 0xFF);
-    for (int i = 0; i < ENTITIES_LIMIT; ++i)
+    for (int i = 1; i <= entities; ++i)
     {
         SDL_RenderDrawPoint(renderer, positions[i].x, positions[i].y);
     }
@@ -248,7 +248,7 @@ void render_positions(Position *positions)
 int update_render_system()
 {
     clear_renderer(renderer);
-    render_positions(positions);
+    render_positions(renderer, positions);
     present_renderer(renderer);
 }
 
