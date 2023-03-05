@@ -101,6 +101,61 @@ void remove_position(uint64_t entityId)
     positions[entityId] = (Position){0};
 }
 
+enum BaseShape
+{
+    None,
+    Circular,
+    Elliptical,
+    Rectangular
+};
+typedef enum BaseShape BaseShape;
+
+struct Base
+{
+    BaseShape shape;
+    double r0;
+    double r1;
+};
+typedef struct Base Base;
+
+Base bases[ENTITIES_LIMIT];
+
+void print_base(Base *b)
+{
+    printf("Base: ");
+    switch(b->shape)
+    {
+        case Circular:
+            printf("Circular: r = %f", b->r0);
+            break;
+        case Elliptical:
+            printf("Elliptical: rx = %f, ry = %f", b->r0, b->r1);
+            break;
+        case Rectangular:
+            printf("Rectangular: w = %f, h = %f", b->r0, b->r1);
+            break;
+        default:
+            printf("Unknown BaseShape.");
+    }
+    printf("\n");
+}
+
+Base *add_base(uint64_t entityId)
+{
+    bases[entityId] = (Base){0};
+    return &bases[entityId];
+}
+
+Base *get_base(uint64_t entityId)
+{
+    return &bases[entityId];
+}
+
+Base *remove_base(uint64_t entityId)
+{
+    bases[entityId] = (Base){0};
+}
+
 struct WindowSystem
 {
     int (*start)(void);
@@ -224,6 +279,35 @@ int main(int argc, char const *argv[])
     print_position(get_position(id));
     remove_position(id);
     print_position(get_position(id));
+
+    Base *b = add_base(id);
+    print_base(b);
+
+    *b = (Base)
+    {
+        .shape = Circular,
+        .r0 = 25.0
+    };
+    print_base(get_base(id));
+
+    *b = (Base)
+    {
+        .shape = Elliptical,
+        .r0 = 25.0,
+        .r1 = 70.0
+    };
+    print_base(get_base(id));
+
+    *b = (Base)
+    {
+        .shape = Rectangular,
+        .r0 = 25.0,
+        .r1 = 70.0
+    };
+    print_base(get_base(id));
+
+    remove_base(id);
+    print_base(get_base(id));
 
     WindowSystem windowSystem;
     windowSystem.start = start_window_system;
