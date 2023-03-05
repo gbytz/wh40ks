@@ -112,7 +112,7 @@ const uint64_t SCREEN_WIDTH = 1280;
 const uint64_t SCREEN_HEIGHT = 720;
 SDL_Window* window = NULL;
 
-int start()
+int start_window_system()
 {
     if(SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
     {
@@ -135,12 +135,66 @@ int start()
     }
 }
 
-int stop()
+int stop_window_system()
 {
 
     SDL_DestroyWindow(window);
     window = NULL;
     SDL_Quit();
+}
+
+struct RenderSystem
+{
+    int (*start)(void);
+    int (*stop)(void);
+    int (*update)(void);
+};
+typedef struct RenderSystem RenderSystem;
+
+SDL_Renderer* renderer = NULL;
+
+int start_render_system()
+{
+    if(!(renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED)))
+    {
+        printf("Failed to create SDL Renderer. SDL_Error: %s\n", SDL_GetError());
+    }
+    else
+    {
+        printf("Created SDL Renderer.\n");
+    }
+}
+
+int stop_render_system()
+{
+    SDL_DestroyRenderer(renderer);
+}
+
+void clear_renderer(SDL_Renderer* renderer)
+{
+    SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0x00);
+    SDL_RenderClear(renderer);
+}
+
+void present_renderer(SDL_Renderer* renderer)
+{
+    SDL_RenderPresent(renderer);
+}
+
+void render_positions(Position *positions)
+{
+    SDL_SetRenderDrawColor(renderer, 0x00, 0xFF, 0x00, 0xFF);
+    for (int i = 0; i < ENTITIES_LIMIT; ++i)
+    {
+        SDL_RenderDrawPoint(renderer, positions[i].x, positions[i].y);
+    }
+}
+
+int update_render_system()
+{
+    clear_renderer(renderer);
+    render_positions(positions);
+    present_renderer(renderer);
 }
 
 int main(int argc, char const *argv[])
@@ -172,10 +226,20 @@ int main(int argc, char const *argv[])
     print_position(get_position(id));
 
     WindowSystem windowSystem;
-    windowSystem.start = start;
-    windowSystem.stop = stop;
+    windowSystem.start = start_window_system;
+    windowSystem.stop = stop_window_system;
+
+    RenderSystem renderSystem;
+    renderSystem.start = start_render_system;
+    renderSystem.stop = stop_render_system;
+    renderSystem.update = update_render_system;
 
     windowSystem.start();
+    renderSystem.start();
+
+    renderSystem.update();
+
+    renderSystem.stop();
     windowSystem.stop();
     return 0;
 }
