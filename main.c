@@ -193,9 +193,13 @@ int start_window_system()
 
 int stop_window_system()
 {
-
     SDL_DestroyWindow(window);
     window = NULL;
+    printf("Destroyed SDL Window.\n");
+
+    SDL_QuitSubSystem(SDL_INIT_VIDEO);
+    printf("Finalized SDL Video subsystem.\n");
+
     SDL_Quit();
 }
 
