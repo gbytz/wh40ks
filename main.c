@@ -228,6 +228,8 @@ int start_render_system()
 int stop_render_system()
 {
     SDL_DestroyRenderer(renderer);
+    renderer = NULL;
+    printf("Destroyed SDL Renderer.\n");
 }
 
 void clear_renderer(SDL_Renderer* renderer)
