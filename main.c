@@ -306,6 +306,119 @@ int update_render_system()
     return 0;
 }
 
+#define INPUTS_LIMIT 64
+
+struct InputSystem
+{
+    int (*start)(void);
+    int (*stop)(void);
+    int (*update)(void);
+};
+typedef struct InputSystem InputSystem;
+
+typedef SDL_Event InputEvent;
+InputEvent inputs[INPUTS_LIMIT];
+
+int start_input_system()
+{
+    if(SDL_InitSubSystem(SDL_INIT_EVENTS) < 0)
+    {
+        printf("Failed to initialize SDL Events subsystem. SDL_Error: %s\n", SDL_GetError());
+        return -1;
+    }
+    else
+    {
+        printf("Initialized SDL Events subsystem.\n");
+        return 0;
+    }
+}
+
+int stop_input_system()
+{
+    SDL_QuitSubSystem(SDL_INIT_EVENTS);
+    printf("Finalized SDL Events subsystem.\n");
+    return 0;
+}
+
+int peep_inputs(InputEvent *inputs, int inputsLimit)
+{
+    SDL_PumpEvents();
+    return SDL_PeepEvents(inputs, inputsLimit, SDL_PEEKEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT);
+}
+
+int get_inputs(InputEvent *inputs, int inputsLimit)
+{
+    SDL_PumpEvents();
+    return SDL_PeepEvents(inputs, inputsLimit, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT);
+}
+
+void print_input_quit(InputEvent *e)
+{
+    printf("QUIT:{");
+    printf(" type: %d,", e->quit.type);
+    printf(" timestamp: %d", e->quit.timestamp);
+    printf(" }\n");
+}
+
+void print_input_mouse_button(InputEvent *e)
+{
+    printf("%s:{", e->button.type == SDL_MOUSEBUTTONDOWN ? "MOUSEBUTTONDOWN" : "MOUSEBUTTONUP");
+    printf(" type: %d,", e->button.type);           // the event type; SDL_MOUSEBUTTONDOWN or SDL_MOUSEBUTTONUP
+    printf(" timestamp: %d,", e->button.timestamp); // timestamp of the event
+    printf(" window: %d,", e->button.windowID);     // the window with mouse focus, if any
+    printf(" which: %d,", e->button.which);         // the mouse instance id, or SDL_TOUCH_MOUSEID; see Remarks for details
+    printf(" button: %d,", e->button.button);       // the button that changed; see Remarks for details
+    printf(" state: %d,", e->button.state);         // the state of the button; SDL_PRESSED or SDL_RELEASED
+    printf(" clicks: %d,", e->button.clicks);       // 1 for single-click, 2 for double-click, etc. (>= SDL 2.0.2)
+    printf(" x: %d,", e->button.x);                 // X coordinate, relative to window
+    printf(" y: %d", e->button.y);                  // Y coordinate, relative to window
+    printf(" }\n");
+}
+
+void print_input_mouse_motion(InputEvent *e)
+{
+    printf("MOUSEMOTION:{");
+    printf(" type: %d,", e->motion.type);            // the event type; SDL_MOUSEMOTION
+    printf(" timestamp: %d,", e->motion.timestamp);  // timestamp of the event
+    printf(" windowID: %d,", e->motion.windowID);    // the window with mouse focus, if any
+    printf(" which: %d,", e->motion.which);          // the mouse instance id, or SDL_TOUCH_MOUSEID; see Remarks for details
+    printf(" state: %d,", e->motion.state);          // the state of the button; see Remarks for details
+    printf(" x: %d,", e->motion.x);                  // X coordinate, relative to window
+    printf(" y: %d,", e->motion.y);                  // Y coordinate, relative to window
+    printf(" xrel: %d,", e->motion.xrel);            // relative motion in the X direction
+    printf(" yrel: %d", e->motion.yrel);            // relative motion in the Y direction
+    printf(" }\n");
+}
+
+void print_input_unknown(InputEvent *e)
+{
+    printf("UNKNOWN INPUT:{");
+    printf(" type: %d", e->type);
+    printf(" }\n");
+}
+
+void print_inputs(InputEvent *inputs, int inputsLimit)
+{
+    for (int i = 0; i < inputsLimit; ++i)
+    {
+        switch(inputs[i].type)
+        {
+            case SDL_QUIT: print_input_quit(&inputs[i]); break;
+            case SDL_MOUSEBUTTONDOWN: print_input_mouse_button(&inputs[i]); break;
+            case SDL_MOUSEBUTTONUP: print_input_mouse_button(&inputs[i]); break;
+            case SDL_MOUSEMOTION: print_input_mouse_motion(&inputs[i]); break;
+            default: print_input_unknown(&inputs[i]); break;
+        }
+    }
+}
+
+int update_input_system()
+{
+    int inputsCount = peep_inputs(inputs, INPUTS_LIMIT);
+    print_inputs(inputs, inputsCount);
+    return inputsCount;
+}
+
 int main(int argc, char const *argv[])
 {
     printf("entities: %"PRIu64"\n", entities);
@@ -397,13 +510,20 @@ int main(int argc, char const *argv[])
     renderSystem.stop = stop_render_system;
     renderSystem.update = update_render_system;
 
+    InputSystem inputSystem;
+    inputSystem.start = start_input_system;
+    inputSystem.stop = stop_input_system;
+    inputSystem.update = update_input_system;
+
     windowSystem.start();
     renderSystem.start();
+    inputSystem.start();
 
     bool quit = false;
     SDL_Event e;
     while(!quit)
     {
+        inputSystem.update();
         //Handle events on queue
         while( SDL_PollEvent( &e ) != 0 )
         {
@@ -416,6 +536,7 @@ int main(int argc, char const *argv[])
         renderSystem.update();
     }
 
+    inputSystem.stop();
     renderSystem.stop();
     windowSystem.stop();
     return 0;
