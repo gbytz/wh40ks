@@ -152,7 +152,7 @@ Base *get_base(uint64_t entityId)
     return &bases[entityId];
 }
 
-Base *remove_base(uint64_t entityId)
+void remove_base(uint64_t entityId)
 {
     bases[entityId] = (Base){0};
 }
@@ -201,6 +201,7 @@ int stop_window_system()
     printf("Finalized SDL Video subsystem.\n");
 
     SDL_Quit();
+    return 0;
 }
 
 struct RenderSystem
@@ -223,6 +224,7 @@ int start_render_system()
     {
         printf("Created SDL Renderer.\n");
     }
+    return 0;
 }
 
 int stop_render_system()
@@ -230,6 +232,7 @@ int stop_render_system()
     SDL_DestroyRenderer(renderer);
     renderer = NULL;
     printf("Destroyed SDL Renderer.\n");
+    return 0;
 }
 
 void clear_renderer(SDL_Renderer* renderer)
@@ -300,6 +303,7 @@ int update_render_system()
     render_positions(renderer, positions);
     render_bases(renderer, positions, bases);
     present_renderer(renderer);
+    return 0;
 }
 
 int main(int argc, char const *argv[])
