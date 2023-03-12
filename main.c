@@ -428,10 +428,22 @@ void print_inputs(InputEvent *inputs, int inputsLimit)
     }
 }
 
+void handle_inputs(InputEvent *inputs, int inputsLimit)
+{
+    for (int i = 0; i < inputsLimit; ++i)
+    {
+        switch(inputs[i].type)
+        {
+            case SDL_QUIT: app.quit = true; break;
+        }
+    }
+}
+
 int update_input_system()
 {
-    int inputsCount = peep_inputs(inputs, INPUTS_LIMIT);
+    int inputsCount = get_inputs(inputs, INPUTS_LIMIT);
     print_inputs(inputs, inputsCount);
+    handle_inputs(inputs, inputsCount);
     return inputsCount;
 }
 
@@ -538,22 +550,14 @@ int main(int argc, char const *argv[])
     renderSystem.start();
     inputSystem.start();
 
-    bool quit = false;
-    SDL_Event e;
-    while(!quit)
+    app.quit = false;
+    print_app_state(&app);
+    while(!app.quit)
     {
         inputSystem.update();
-        //Handle events on queue
-        while( SDL_PollEvent( &e ) != 0 )
-        {
-            //User requests quit
-            if( e.type == SDL_QUIT )
-            {
-                quit = true;
-            }
-        }
         renderSystem.update();
     }
+    print_app_state(&app);
 
     inputSystem.stop();
     renderSystem.stop();
