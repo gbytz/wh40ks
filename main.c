@@ -5,6 +5,22 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL2_gfxPrimitives.h>
 
+
+struct AppState
+{
+    bool quit;
+};
+typedef struct AppState AppState;
+
+AppState app;
+
+void print_app_state(AppState *a)
+{
+    printf("AppState:{");
+    printf(" quit: %d", a->quit);
+    printf(" }\n");
+}
+
 #define ENTITIES_LIMIT 64
 
 uint64_t entities = 0;
@@ -419,8 +435,11 @@ int update_input_system()
     return inputsCount;
 }
 
+
 int main(int argc, char const *argv[])
 {
+    print_app_state(&app);
+
     printf("entities: %"PRIu64"\n", entities);
     uint64_t id = create_entity();
     printf("entities: %"PRIu64"\n", entities);
