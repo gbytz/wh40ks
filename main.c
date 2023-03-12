@@ -23,7 +23,7 @@ Army armies[ENTITIES_LIMIT];
 
 void print_army(Army *a)
 {
-    printf("Army: %lu\n", a->value);
+    printf("Army: %"PRIu64"\n", a->value);
 }
 
 Army *add_army(uint64_t entityId)
@@ -52,7 +52,7 @@ Unit units[ENTITIES_LIMIT];
 
 void print_unit(Unit *u)
 {
-    printf("Unit: %lu\n", u->value);
+    printf("Unit: %"PRIu64"\n", u->value);
 }
 
 Unit *add_unit(uint64_t entityId)
@@ -304,10 +304,10 @@ int update_render_system()
 
 int main(int argc, char const *argv[])
 {
-    printf("entities: %lu\n", entities);
+    printf("entities: %"PRIu64"\n", entities);
     uint64_t id = create_entity();
-    printf("entities: %lu\n", entities);
-    printf("entity: %lu\n", id);
+    printf("entities: %"PRIu64"\n", entities);
+    printf("entity: %"PRIu64"\n", id);
 
     Army *a = add_army(id);
     print_army(a);
